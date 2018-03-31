@@ -1,4 +1,5 @@
 auth.json
 vendor/
 .bundle
+titles.json
 *.swp

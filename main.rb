@@ -1,5 +1,6 @@
 require_relative './analytics'
 require_relative './chatwork'
+require_relative './page_title_manager'
 
 BASE_URL = 'http://qs.nndo.jp'
 VIEW_ID = '158527891'
@@ -12,10 +13,15 @@ report = analitics.report_users_count_by_date('today')
 
 # 結果を整形してチャットワークに通知
 chatwork = Chatwork.new(CHATWORK_API_KEY)
-room_id  = CHATWORK_ROOM_ID
-chatwork.sendMessage(room_id, <<EOS
-累計 #{report[:total]}
-#{report[:pages].map {|page| "#{page[:views]}: #{page[:url]}"}.join("\n")}
-EOS
-)
+page_title_manager = PageTitleManager.new
 
+today = Date.today.strftime('%Y-%m-%d')
+messages = ["#{today} 累計 #{report[:total]}"]
+
+report[:pages].each do |page|
+  title = page_title_manager.get_or_fetch(page[:url])
+  messages << "#{page[:views]}: #{title} #{page[:url]}"
+end
+
+page_title_manager.save
+chatwork.sendMessage(CHATWORK_ROOM_ID, messages.join("\n"))
