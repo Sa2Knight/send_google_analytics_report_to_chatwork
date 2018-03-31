@@ -19,8 +19,9 @@ today = Date.today.strftime('%Y-%m-%d')
 messages = ["#{today} 累計 #{report[:total]}"]
 
 report[:pages].each do |page|
-  title = page_title_manager.get_or_fetch(page[:url])
-  messages << "#{page[:views]}: #{title} #{page[:url]}"
+  url = URI.escape(page[:url])
+  title = page_title_manager.get_or_fetch(url)
+  messages << "#{page[:views]}: #{title} #{url}"
 end
 
 page_title_manager.save
