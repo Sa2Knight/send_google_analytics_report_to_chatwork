@@ -41,7 +41,6 @@ class PageTitleManager
     # @return [String] ページタイトル
     #
     def page_title_by(url:)
-      p 'fetch suruyo'
       doc = Nokogiri::HTML.parse(open(url))
       doc.title.split('|').first.strip
     end
