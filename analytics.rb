@@ -2,16 +2,19 @@ require 'google/apis/analyticsreporting_v4'
 
 class Analytics
 
+  ANALYTICS_SCOPE = ['https://www.googleapis.com/auth/analytics.readonly']
+  AUTH_FILE_PATH = 'auth.json'
+
   #
   # レポート対象を指定してオブジェクトを生成
   # @param [String] base_url  レポート対象サイトのURL
   # @param [String] view_id   ビューID
   #
-  def initialize(base_url, view_id)
+  def initialize(base_url:, view_id:)
     @base_url = base_url
     @view_id  = view_id
     @analytics = Google::Apis::AnalyticsreportingV4
-    auth
+    auth_google_analytics_api
   end
 
   #
@@ -21,10 +24,10 @@ class Analytics
   #
   def report_users_count_by_date(date)
     date_range = @analytics::DateRange.new(start_date: date, end_date: date)
-    metric = @analytics::Metric.new(expression: 'ga:users', alias: 'users')
-    dimension = @analytics::Dimension.new(name: 'ga:pagePath')
-    order_by = @analytics::OrderBy.new(field_name: 'ga:users', sort_order: 'DESCENDING')
-    request = @analytics::GetReportsRequest.new(
+    metric     = @analytics::Metric.new(expression: 'ga:users', alias: 'users')
+    dimension  = @analytics::Dimension.new(name: 'ga:pagePath')
+    order_by   = @analytics::OrderBy.new(field_name: 'ga:users', sort_order: 'DESCENDING')
+    request    = @analytics::GetReportsRequest.new(
       report_requests: [@analytics::ReportRequest.new(
         view_id: @view_id,
         metrics: [metric],
@@ -52,12 +55,11 @@ class Analytics
     # GoogleアナリティクスAPIに認証する
     # 同ディレクトリにauth.jsonを配置すること
     #
-    def auth
-      scope = ['https://www.googleapis.com/auth/analytics.readonly']
+    def auth_google_analytics_api
       @client = @analytics::AnalyticsReportingService.new
       @client.authorization = Google::Auth::ServiceAccountCredentials.make_creds(
-        json_key_io: File.open('auth.json'),
-        scope: scope
+        json_key_io: File.open(AUTH_FILE_PATH),
+        scope: ANALYTICS_SCOPE
       )
     end
 
